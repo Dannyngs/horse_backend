@@ -348,7 +348,7 @@ router.get('/', function(req, res) {
             var weight = 100/hr.weight*100*0.1;
             var draw_placed = hr.draw_placed*5*0.2;
             var RTG = hr.RTG*0.05;
-            var veterinary = hr.veterinary*10*0.1;
+            var veterinary = hr.veterinary*10*0.3;
             var jockey_score = hr.jockey_score*0.25;
             var trainer_score = hr.trainer_score*2*0.2;
             hr.grade =Math.round((horse_weight + weight + draw_placed + RTG - veterinary + jockey_score + trainer_score)*100)/100;
