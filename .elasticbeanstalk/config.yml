@@ -1,6 +1,6 @@
 branch-defaults:
   master:
-    environment: horse-backend-dev
+    environment: horseback-dev
     group_suffix: null
 global:
   application_name: horse_backend
