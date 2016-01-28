@@ -5,10 +5,12 @@ var cheerio = require('cheerio');
 var async = require('async');
 
 var main_url='http://racing.hkjc.com/racing/Info/meeting/RaceCard/chinese/Local/20151223';
+var horse_url='http://racing.hkjc.com/racing/Info/meeting/RaceCard/chinese/Local/';
+
 var draw_url='http://racing.hkjc.com/racing/Info/meeting/Draw/chinese/Local/20151223';
-var veterinary_url='http://racing.hkjc.com/racing/Info/meeting/VeterinaryRecord/chinese/Local/20151223';
+var veterinary_url='http://racing.hkjc.com/racing/Info/meeting/VeterinaryRecord/chinese/Local/';
 var trainer_url = 'http://racing.hkjc.com/racing/Info/trainer/Ranking/chinese';
-var jockey_url = 'http://racing.hkjc.com/racing/Info/jockey/Ranking/chinese'
+var jockey_url = 'http://racing.hkjc.com/racing/Info/jockey/Ranking/chinese';
 
 /* GET home page. */
 
@@ -32,23 +34,35 @@ router.get('/fetchRace', function(req, res) {
  var racePlace = tdS.filter('.racingTitle');
 
 
-tdS.each(function() {
+tdS.each(function(index) {
 
 	if($(this).attr('width')=="24px")
     	{
     		var race =  {};
            
-    		race.link = $(this).children().attr('href');
-             
-             if(!race.link)race.link=main_url;
+    		
+           
+             if(!$(this).children().attr('href'))
+                 {
+                  race.no= 1 ;
+                 race.link='20151223/';//need to edit hen production
+               }
+               else 
+               {
+                   race_str = $(this).children().attr('href').split('Local/')
+                   race.link =race_str[1];
+                   race.no = index-1;
+
+                   
+               }
             //var str = race.link.toString();
             
-           race.date = str.split("/");
+          // race.date = str.split("/");
     		raceList.push(race);
     	}
 });
 
-  res.json({race:raceList});
+  res.json(raceList);
 
 
     }
@@ -71,10 +85,13 @@ tdS.each(function() {
 
 
 /* 2nd fetch horses , veterinary records , draws ,etc from a certain race */
-router.get('/', function(req, res) {
+router.post('/', function(req, res) {
    
-    var url = req.body.url || main_url;
-    var raceID = 0 ;
+    var link =  req.body.link;
+    var raceID = 0;
+    if(link!="20151223/")//need to edit hen production
+     raceID = link.split('/')[2]-1;
+    console.log(raceID)
     var horseList =[];
      var drawList = [];
      var veterinaryList = [];
@@ -86,8 +103,10 @@ router.get('/', function(req, res) {
    
     async.parallel([
         function(callback){
-         console.log('Fetching Horse ');
-         request(url, function (error, response, body) {
+         console.log('Fetching Horse');
+                  console.log(horse_url+link);
+
+         request(horse_url+link, function (error, response, body) {
 
     if (!error && response.statusCode == 200) {
  
@@ -110,7 +129,7 @@ router.get('/', function(req, res) {
 	 		horse.jockey = tdS.eq(6).children().text().split("(")[0];
 	 		horse.draw = tdS.eq(8).text();
 	 		horse.trainer = tdS.eq(9).children().text();
-	 		horse.RTG = parseInt(tdS.eq(10).text());
+	 		horse.rtg = parseInt(tdS.eq(10).text());
 	 		horse.horse_weight = parseInt(tdS.eq(12).text());
 
 	 		horseList.push(horse);
@@ -169,7 +188,7 @@ router.get('/', function(req, res) {
 });} ,
         function(callback){
          console.log('Fetching Veterinary Record');
-         request(veterinary_url, function (error, response, body) {
+         request(veterinary_url+link, function (error, response, body) {
 
     if (!error && response.statusCode == 200) {
             $ = cheerio.load(body);
@@ -344,23 +363,25 @@ router.get('/', function(req, res) {
         
         for(var i=0;i<horseList.length;i++){
             var hr = horseList[i];
-            var horse_weight = hr.horse_weight / 1100*100*0.1;
-            var weight = 100/hr.weight*100*0.1;
-            var draw_placed = hr.draw_placed*5*0.2;
-            var RTG = hr.RTG*0.05;
-            var veterinary = hr.veterinary*10*0.3;
-            var jockey_score = hr.jockey_score*0.25;
-            var trainer_score = hr.trainer_score*2*0.2;
-            hr.grade =Math.round((horse_weight + weight + draw_placed + RTG - veterinary + jockey_score + trainer_score)*100)/100;
+            hr.HORSE_WEIGHT = hr.horse_weight / 1100*100*0.1;
+            hr.WEIGHT = 100/hr.weight*100*0.1;
+            hr.DRAW_PLACED = hr.draw_placed*5*0.2;
+            hr.RTG = hr.rtg*0.05;
             
+            hr.VETERINARY = hr.veterinary*10*0.3;
+            hr.JOCKEY_SCORE = hr.jockey_score*0.25;
+            hr.TRAINER_SCORE = hr.trainer_score*2*0.2;
+            hr.grade =Math.round((hr.HORSE_WEIGHT + hr.WEIGHT + hr.DRAW_PLACED +  hr.RTG - hr.VETERINARY + hr.JOCKEY_SCORE + hr.TRAINER_SCORE)*100)/100;
+             
         }
         
         //rank
         rankHorse(horseList);
         
-        
-        res.render('home',{message:'a test',hl:horseList})
-
+      
+        //res.render('home',{hl:horseList})
+       
+        res.json(horseList)
     
     
     
@@ -393,9 +414,10 @@ router.get('/', function(req, res) {
     return array;
 }
 
-router.post('/fetchDraw/:raceID',function(req,res){
+router.post('/test/?id=:raceID',function(req,res){
    
-      
+    
+      res.json({asd:'asdasd'})
       
     
 });
