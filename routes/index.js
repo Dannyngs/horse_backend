@@ -3,11 +3,10 @@ var router = express.Router();
 var request =require('request');
 var cheerio = require('cheerio');
 var async = require('async');
-
-var main_url='http://racing.hkjc.com/racing/Info/meeting/RaceCard/chinese/Local/20151223';
+var main_url='http://racing.hkjc.com/racing/Info/meeting/RaceCard/chinese/Local/';
 var horse_url='http://racing.hkjc.com/racing/Info/meeting/RaceCard/chinese/Local/';
 
-var draw_url='http://racing.hkjc.com/racing/Info/meeting/Draw/chinese/Local/20151223';
+var draw_url='http://racing.hkjc.com/racing/Info/meeting/Draw/chinese/Local/';
 var veterinary_url='http://racing.hkjc.com/racing/Info/meeting/VeterinaryRecord/chinese/Local/';
 var trainer_url = 'http://racing.hkjc.com/racing/Info/trainer/Ranking/chinese';
 var jockey_url = 'http://racing.hkjc.com/racing/Info/jockey/Ranking/chinese';
@@ -45,7 +44,7 @@ tdS.each(function(index) {
              if(!$(this).children().attr('href'))
                  {
                   race.no= 1 ;
-                 race.link='20151223/';//need to edit hen production
+                 race.link='/';//need to edit hen production
                }
                else 
                {
@@ -89,7 +88,7 @@ router.post('/', function(req, res) {
    
     var link =  req.body.link;
     var raceID = 0;
-    if(link!="20151223/")//need to edit hen production
+    if(link!="/")//need to edit hen production
      raceID = link.split('/')[2]-1;
     console.log(raceID)
     var horseList =[];
@@ -97,14 +96,15 @@ router.post('/', function(req, res) {
      var veterinaryList = [];
      var trainerList = [];
      var jockeyList = [];
-
+        var raceinfo={};
 
    
    
     async.parallel([
         function(callback){
          console.log('Fetching Horse');
-                  console.log(horse_url+link);
+
+
 
          request(horse_url+link, function (error, response, body) {
 
@@ -116,22 +116,24 @@ router.post('/', function(req, res) {
         $ = cheerio.load(body);
 
  var trS = $('.draggable').children('tr');
- 
+   raceinfoArray= $('.divWidth400').find('td').text().split(",");
+    raceinfo=raceinfoArray[0]+raceinfoArray[1]+' , '+raceinfoArray[2]
 	 trS.each(function(index ) {
 	 	if(index!=0){
 	 		var horse = {};
 	 		var tdS = $(this).children();
-	 		horse.no = tdS.eq(0).text();
-	 		//horse.last6run = tdS.eq(1).text();
-	 		//horse.colour = tdS.eq(2).text();
+
+	 		horse.no = parseInt(tdS.eq(0).text());	
 	 		horse.horse = tdS.eq(3).text().split("\r\n")[1].trim();
 	 		horse.weight = parseInt(tdS.eq(5).text());
 	 		horse.jockey = tdS.eq(6).children().text().split("(")[0];
-	 		horse.draw = tdS.eq(8).text();
+           
+	 		horse.draw = parseInt(tdS.eq(8).text())||0;
 	 		horse.trainer = tdS.eq(9).children().text();
 	 		horse.rtg = parseInt(tdS.eq(10).text());
-	 		horse.horse_weight = parseInt(tdS.eq(12).text());
-
+	 		horse.horse_weight = parseInt(tdS.eq(12).text())||0;
+            
+            if(horse.draw &&horse.horse_weight)
 	 		horseList.push(horse);
 	 	}
 	 	
@@ -147,7 +149,7 @@ router.post('/', function(req, res) {
 
 
 }); 
-    } ,
+    } ,//Fetch Horse Basic Info
         function(callback){
          console.log('Fetching Draw');
          request(draw_url, function (error, response, body) {
@@ -185,7 +187,7 @@ router.post('/', function(req, res) {
 
 
 
-});} ,
+});} ,//Fetch Drawy Info
         function(callback){
          console.log('Fetching Veterinary Record');
          request(veterinary_url+link, function (error, response, body) {
@@ -232,7 +234,7 @@ router.post('/', function(req, res) {
 
 
 
-});} ,
+});} ,//Fetch Veterinary Info
         function(callback){
          console.log('Fetching Trainer');
          request(trainer_url, function (error, response, body) {
@@ -263,7 +265,6 @@ router.post('/', function(req, res) {
 		
 	});
 
-            //drawList.splice(drawList.length-1,1)
 
              console.log('Done Fetching Trainer ');
                 callback(null,4)
@@ -363,9 +364,9 @@ router.post('/', function(req, res) {
         
         for(var i=0;i<horseList.length;i++){
             var hr = horseList[i];
-            hr.HORSE_WEIGHT = hr.horse_weight / 1100*100*0.1;
-            hr.WEIGHT = 100/hr.weight*100*0.1;
-            hr.DRAW_PLACED = hr.draw_placed*5*0.2;
+            hr.HORSE_WEIGHT = 1000/hr.horse_weight / 100*0.1;
+            hr.WEIGHT = 110/hr.weight*100*0.1;
+            hr.DRAW_PLACED = hr.draw_placed*0.2;
             hr.RTG = hr.rtg*0.05;
             
             hr.VETERINARY = hr.veterinary*10*0.3;
@@ -381,7 +382,7 @@ router.post('/', function(req, res) {
       
         //res.render('home',{hl:horseList})
        
-        res.json(horseList)
+        res.json({hl:horseList,ri:raceinfo})
     
     
     
