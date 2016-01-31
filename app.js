@@ -16,10 +16,10 @@ var io = require('socket.io')(server);
 global.io =io;
 
 var corsOptions = {
-  origin: 'http://localhost:3000',
-    credentials:true
+  
+    credentials:false
 };
-app.use(cors());
+app.use(cors(corsOptions));
 
 
 var routes = require('./routes/index');
