@@ -7,16 +7,15 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoskin = require('mongoskin');
-var cors = require('cors')
+//var cors = require('cors')
 
 
 var app = express();
 var server = require('http').Server(app);
-var io = require('socket.io')(server);
-io.set('origins', '*:*');
+var io = require('socket.io')(server,{origins:'http://localhost:3000'});
 global.io =io;
 
-app.use(cors());
+//app.use(cors());
 
 
 var routes = require('./routes/index');
@@ -31,7 +30,7 @@ app.locals.ENV_DEVELOPMENT = env == 'development';
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-// app.use(favicon(__dirname + '/public/img/favicon.ico'));
+//app.use(favicon(__dirname + '/public/img/favicon.ico'));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
