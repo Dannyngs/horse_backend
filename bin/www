@@ -2,6 +2,7 @@
 var server = require('../app');
 
 
-server.listen(80, function() {
+
+server.listen(process.env.PORT || 80, function() {
   console.log('Express server listening on port ' + server.address().port);
 });
