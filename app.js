@@ -7,7 +7,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoskin = require('mongoskin');
-//var cors = require('cors')
+var cors = require('cors')
 
 
 var app = express();
@@ -19,7 +19,7 @@ var corsOptions = {
   origin: 'http://localhost:3000',
     credentials:true
 };
-//app.use();
+app.use(cors());
 
 
 var routes = require('./routes/index');
