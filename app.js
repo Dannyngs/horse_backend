@@ -12,7 +12,7 @@ var cors = require('cors')
 
 var app = express();
 var server = require('http').Server(app);
-var io = require('socket.io')(server,{origins:'*:*'});
+var io = require('socket.io')(server);
 global.io =io;
 
 var corsOptions = {
