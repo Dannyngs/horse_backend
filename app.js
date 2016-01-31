@@ -16,8 +16,8 @@ var io = require('socket.io')(server);
 global.io =io;
 
 var corsOptions = {
-  
-    credentials:false
+  origin: 'http://localhost:3000',
+    credentials:true
 };
 app.use(cors(corsOptions));
 
