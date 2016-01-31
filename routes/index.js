@@ -3,13 +3,14 @@ var router = express.Router();
 var request =require('request');
 var cheerio = require('cheerio');
 var async = require('async');
-var main_url='http://racing.hkjc.com/racing/Info/meeting/RaceCard/chinese/Local/';
-var horse_url='http://racing.hkjc.com/racing/Info/meeting/RaceCard/chinese/Local/';
+var lang = 'english';
+var main_url='http://racing.hkjc.com/racing/Info/meeting/RaceCard/'+lang+'/Local/';
+var horse_url='http://racing.hkjc.com/racing/Info/meeting/RaceCard/'+lang+'/Local/';
 
-var draw_url='http://racing.hkjc.com/racing/Info/meeting/Draw/chinese/Local/';
-var veterinary_url='http://racing.hkjc.com/racing/Info/meeting/VeterinaryRecord/chinese/Local/';
-var trainer_url = 'http://racing.hkjc.com/racing/Info/trainer/Ranking/chinese';
-var jockey_url = 'http://racing.hkjc.com/racing/Info/jockey/Ranking/chinese';
+var draw_url='http://racing.hkjc.com/racing/Info/meeting/Draw/'+lang+'/Local/';
+var veterinary_url='http://racing.hkjc.com/racing/Info/meeting/VeterinaryRecord/'+lang+'/Local/';
+var trainer_url = 'http://racing.hkjc.com/racing/Info/trainer/Ranking/'+lang;
+var jockey_url = 'http://racing.hkjc.com/racing/Info/jockey/Ranking/'+lang;
 
 /* GET home page. */
 
