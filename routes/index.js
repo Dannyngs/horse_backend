@@ -3,6 +3,10 @@ var router = express.Router();
 var request =require('request');
 var cheerio = require('cheerio');
 var async = require('async');
+
+
+
+
 var lang = 'english';
 var main_url='http://racing.hkjc.com/racing/Info/meeting/RaceCard/'+lang+'/Local/';
 var horse_url='http://racing.hkjc.com/racing/Info/meeting/RaceCard/'+lang+'/Local/';
@@ -416,19 +420,108 @@ router.post('/', function(req, res) {
     return array;
 }
 
-router.post('/test/?id=:raceID',function(req,res){
+
+/* socket.io setting */
    
-    
-      res.json({asd:'asdasd'})
+   io.on('connection', function(socket){
+       var ip=socket.request.connection.remoteAddress;
+       var socid=socket.id;
       
+       
+       console.log(socid+': Visiter Showed')
+     
+       socket.on('login', function(user){
+          console.log(socid+': Trying to login  : '+user.username);
+           
+          //Step 1 : check with databases
+       var username=user.username;
+        var password=user.password;
     
-});
+    db.users.findOne({username:username,password:password},function(err,user){
+           
+           if(err) return socket.emit('loginfailed',{msg:err});
+           if(!user)return socket.emit('loginfailed',{msg:"錯誤登入信息，請重試！"});
+            if(user.role!='admin'){
+               
+            //Step 2 : check if loged in 
+            
+            db.current_users.findOne({userkey:user.username},function(err,keylog){
+                if(err) return socket.emit('loginfailed',{msg:err});
+                             
 
+                if(keylog)//if there's multiple login
+                {               
 
-router.post('/fetchVeterinary/')
-/* 3th analize trainer & jocky */
+                    db.multiplelogin.insert(
+                        {ip:ip,username:user.username,date:new Date()},
+                        function(err){});
+                    console.log(socid+': Mutilple Login Occured: '+user.username)
+                    return socket.emit('loginfailed',{msg:"登入失敗！此戶口正在使用中！"}); 
+                
+                }
+                
+                //Step 3 : passed!
+                var expireTime = new Date();
+                expireTime.setMinutes(expireTime.getMinutes() + EXPIRETIME);
+                db.current_users.insert({userkey:user.username,expireAt:expireTime,date:new Date(),socid:socid},function(err){
+                if(err)console.log(err);
+                 //iouser=user;
+                    console.log(socid+': User loged in : '+user.username)
+                    socket.emit('loginok',user)
+                      
+                })              
+            
+            
+            })
+           
+            
+           }else{
+                return  socket.emit('loginok',user)
+            }
+            
+            
+            
+       })
+    
+     
+          
+      
+      
+     
+      
+      
+      
+     
+  }); //end of socket login    
+       
+       socket.on('logout',function(sid){
+           
+           db.current_users.remove({socid:socid},function(err){
+            if(err)return socket.emit('logoutfailed',err);
+         console.log(socid+': user logout ')
+          return socket.emit("logoutok",'log out ok!');
+           
+       }) 
+       })
+       
+       socket.on('disconnect', function(){
 
-
+      
+       db.current_users.remove({socid:socid},function(err,rs){
+           if(err)console.log(err);
+           
+              if(!rs.result.n)
+               return console.log(socid+': Visiter left ');
+           console.log(socid+': User left ');
+           
+           
+       }) 
+       
+  });
+   
+   });  
+    
+    
 
 
 

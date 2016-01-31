@@ -6,11 +6,21 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var mongoskin = require('mongoskin');
+var cors = require('cors')
+
+
+var app = express();
+var server = require('http').Server(app);
+var io = require('socket.io')(server);
+io.set('origins', '*:*');
+global.io =io;
+
+app.use(cors());
+
 
 var routes = require('./routes/index');
 var users = require('./routes/user');
-
-var app = express();
 
 var env = process.env.NODE_ENV || 'development';
 app.locals.ENV = env;
@@ -29,15 +39,7 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(function(req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
 
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    res.header("Access-Control-Allow-Methods","POST, GET, PUT, DELETE");
-
-
-  next();
-});
 app.use('/', routes);
 app.use('/users', users);
 
@@ -74,6 +76,17 @@ app.use(function(err, req, res, next) {
         title: 'error'
     });
 });
+
+
+//databases setting
+ var db = mongoskin.db('mongodb://racingpro:racingpro123@ds027335.mongolab.com:27335/racingpro');
+    
+    db.bind('users');
+    db.bind('current_users');
+    db.bind('multiplelogin');
+    global.db = db;
+ db.current_users.remove({});
+console.log(12)
 
 
 module.exports = app;
