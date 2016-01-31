@@ -369,7 +369,7 @@ router.post('/', function(req, res) {
             hr.DRAW_PLACED = hr.draw_placed*0.2;
             hr.RTG = hr.rtg*0.05;
             
-            hr.VETERINARY = hr.veterinary*10*0.3;
+            hr.VETERINARY = hr.veterinary*10*0.1;
             hr.JOCKEY_SCORE = hr.jockey_score*0.25;
             hr.TRAINER_SCORE = hr.trainer_score*2*0.2;
             hr.grade =Math.round((hr.HORSE_WEIGHT + hr.WEIGHT + hr.DRAW_PLACED +  hr.RTG - hr.VETERINARY + hr.JOCKEY_SCORE + hr.TRAINER_SCORE)*100)/100;
