@@ -15,11 +15,8 @@ var server = require('http').Server(app);
 var io = require('socket.io')(server);
 global.io =io;
 
-var corsOptions = {
-  origin: 'http://localhost:3000',
-    credentials:true
-};
-app.use(cors(corsOptions));
+
+app.use(cors());
 
 
 var routes = require('./routes/index');
@@ -92,4 +89,4 @@ app.use(function(err, req, res, next) {
 console.log(12)
 
 
-module.exports = app;
+module.exports = server;

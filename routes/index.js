@@ -6,7 +6,7 @@ var async = require('async');
 
 
 
-
+var EXPIRETIME =   360
 var lang = 'english';
 var main_url='http://racing.hkjc.com/racing/Info/meeting/RaceCard/'+lang+'/Local/';
 var horse_url='http://racing.hkjc.com/racing/Info/meeting/RaceCard/'+lang+'/Local/';
