@@ -7,15 +7,18 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoskin = require('mongoskin');
-//var cors = require('cors')
+var cors = require('cors')
 
 
 var app = express();
 var server = require('http').Server(app);
-var io = require('socket.io')(server,{origins:'http://localhost:3000'});
+var io = require('socket.io')(server,{origins:'*:*'});
 global.io =io;
 
-//app.use(cors());
+var corsOptions = {
+  origin: 'http://localhost:3000'
+};
+app.use(cors(corsOptions));
 
 
 var routes = require('./routes/index');
