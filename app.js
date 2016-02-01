@@ -86,7 +86,7 @@ app.use(function(err, req, res, next) {
     db.bind('multiplelogin');
     global.db = db;
  db.current_users.remove({});
-console.log(12)
+
 
 
 module.exports = server;

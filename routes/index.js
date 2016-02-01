@@ -440,7 +440,7 @@ router.post('/', function(req, res) {
     db.users.findOne({username:username,password:password},function(err,user){
            
            if(err) return socket.emit('loginfailed',{msg:err});
-           if(!user)return socket.emit('loginfailed',{msg:"錯誤登入信息，請重試！"});
+           if(!user)return socket.emit('loginfailed',{msg:"Incorrect login infomation"});
             if(user.role!='admin'){
                
             //Step 2 : check if loged in 
@@ -456,7 +456,7 @@ router.post('/', function(req, res) {
                         {ip:ip,username:user.username,date:new Date()},
                         function(err){});
                     console.log(socid+': Mutilple Login Occured: '+user.username)
-                    return socket.emit('loginfailed',{msg:"登入失敗！此戶口正在使用中！"}); 
+                    return socket.emit('loginfailed',{msg:"This account is currently being used"}); 
                 
                 }
                 
