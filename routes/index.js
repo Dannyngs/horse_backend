@@ -7,14 +7,14 @@ var async = require('async');
 
 
 var EXPIRETIME =   360
-var lang = 'english';
-var main_url='http://racing.hkjc.com/racing/Info/meeting/RaceCard/'+lang+'/Local/';
-var horse_url='http://racing.hkjc.com/racing/Info/meeting/RaceCard/'+lang+'/Local/';
 
-var draw_url='http://racing.hkjc.com/racing/Info/meeting/Draw/'+lang+'/Local/';
-var veterinary_url='http://racing.hkjc.com/racing/Info/meeting/VeterinaryRecord/'+lang+'/Local/';
-var trainer_url = 'http://racing.hkjc.com/racing/Info/trainer/Ranking/'+lang;
-var jockey_url = 'http://racing.hkjc.com/racing/Info/jockey/Ranking/'+lang;
+var main_url='http://racing.hkjc.com/racing/Info/meeting/RaceCard/english';
+var horse_url='http://racing.hkjc.com/racing/Info/meeting/RaceCard/';
+
+var draw_url='http://racing.hkjc.com/racing/Info/meeting/Draw/';
+var veterinary_url='http://racing.hkjc.com/racing/Info/meeting/VeterinaryRecord/';
+var trainer_url = 'http://racing.hkjc.com/racing/Info/trainer/Ranking/';
+var jockey_url = 'http://racing.hkjc.com/racing/Info/jockey/Ranking/';
 
 /* GET home page. */
 
@@ -92,6 +92,7 @@ tdS.each(function(index) {
 router.post('/', function(req, res) {
    
     var link =  req.body.link;
+    var     lang = req.body.lang;
     var raceID = 0;
     if(link!="/")//need to edit hen production
      raceID = link.split('/')[2]-1;
@@ -111,7 +112,7 @@ router.post('/', function(req, res) {
 
 
 
-         request(horse_url+link, function (error, response, body) {
+         request(horse_url+lang+'/Local/'+link, function (error, response, body) {
 
     if (!error && response.statusCode == 200) {
  
@@ -157,7 +158,7 @@ router.post('/', function(req, res) {
     } ,//Fetch Horse Basic Info
         function(callback){
          console.log('Fetching Draw');
-         request(draw_url, function (error, response, body) {
+         request(draw_url+lang+'/Local/', function (error, response, body) {
 
     if (!error && response.statusCode == 200) {
             $ = cheerio.load(body);
@@ -195,14 +196,16 @@ router.post('/', function(req, res) {
 });} ,//Fetch Drawy Info
         function(callback){
          console.log('Fetching Veterinary Record');
-         request(veterinary_url+link, function (error, response, body) {
+         request(veterinary_url+lang+'/Local/'+link, function (error, response, body) {
 
     if (!error && response.statusCode == 200) {
             $ = cheerio.load(body);
 
 
 
-        var trS = $('.tableBorder0').find('tr');
+       var trS = $('.tableBorder0').first().find('tr');
+        
+      
         var cur_no = 0 ;
         trS.each(function(index ) {
          
@@ -223,13 +226,13 @@ router.post('/', function(req, res) {
 
 
 	 		veterinaryList.push(veter);
+            console.log(veter.horse_no)
 	 	}
 	 	
 		
 	});
 
           // veterinaryList.splice(0,1)
-
              console.log('Done Fetching Veterinary Record');
                 callback(null,3)
 
@@ -242,7 +245,7 @@ router.post('/', function(req, res) {
 });} ,//Fetch Veterinary Info
         function(callback){
          console.log('Fetching Trainer');
-         request(trainer_url, function (error, response, body) {
+         request(trainer_url+lang, function (error, response, body) {
 
     if (!error && response.statusCode == 200) {
             $ = cheerio.load(body);
@@ -258,7 +261,7 @@ router.post('/', function(req, res) {
             var champion = parseInt(tdS.eq(1).text());
             var second = parseInt(tdS.eq(2).text());
             var third = parseInt(tdS.eq(3).text())
-	 		trainer.score =Math.round((champion+second+third)/3*100)/100;
+	 		trainer.score =Math.round((champion+second+third)*100)/100;
 
             
 
@@ -283,7 +286,7 @@ router.post('/', function(req, res) {
 });} ,
          function(callback){
          console.log('Fetching Jockey');
-         request(jockey_url, function (error, response, body) {
+         request(jockey_url+lang, function (error, response, body) {
 
     if (!error && response.statusCode == 200) {
             $ = cheerio.load(body);
@@ -299,7 +302,7 @@ router.post('/', function(req, res) {
             var champion = parseInt(tdS.eq(1).text());
             var second = parseInt(tdS.eq(2).text());
             var third = parseInt(tdS.eq(3).text())
-	 		jockey.score =Math.round((champion+second+third)/3*100)/100;
+	 		jockey.score =Math.round((champion+second+third)*100)/100;
 
             
 
@@ -369,7 +372,7 @@ router.post('/', function(req, res) {
         
         for(var i=0;i<horseList.length;i++){
             var hr = horseList[i];
-            hr.HORSE_WEIGHT = 1000/hr.horse_weight / 100*0.1;
+            hr.HORSE_WEIGHT = 1000/hr.horse_weight* 100*0.1;
             hr.WEIGHT = 110/hr.weight*100*0.1;
             hr.DRAW_PLACED = hr.draw_placed*0.2;
             hr.RTG = hr.rtg*0.05;
@@ -385,9 +388,8 @@ router.post('/', function(req, res) {
         rankHorse(horseList);
         
       
-        //res.render('home',{hl:horseList})
        
-        res.json({hl:horseList,ri:raceinfo})
+       res.json({hl:horseList,ri:raceinfo})
     
     
     
