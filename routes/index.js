@@ -92,7 +92,7 @@ tdS.each(function(index) {
 router.post('/', function(req, res) {
    
     var link =  req.body.link;
-    var     lang = req.body.lang;
+    var     lang = req.body.lang||'english';
     var raceID = 0;
     if(link!="/")//need to edit hen production
      raceID = link.split('/')[2]-1;
