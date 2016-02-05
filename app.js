@@ -10,6 +10,11 @@ var mongoskin = require('mongoskin');
 var cors = require('cors')
 
 
+
+
+
+
+
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
@@ -40,8 +45,12 @@ app.use(bodyParser.urlencoded({
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+
+
 app.use('/',routes);
 app.use('/admin', admin);
+    
+
 
 /// catch 404 and forward to error handler
 app.use(function(req, res, next) {

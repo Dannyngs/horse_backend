@@ -423,6 +423,10 @@ router.post('/', function(req, res) {
 }
 
 
+
+
+
+
 /* socket.io setting */
    
    io.on('connection', function(socket){
@@ -523,7 +527,7 @@ router.post('/', function(req, res) {
    
    });  
     
-    
+
 
 
 
