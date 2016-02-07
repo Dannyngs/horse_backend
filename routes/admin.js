@@ -6,7 +6,7 @@ ObjectId = require('mongoskin').ObjectID
 /* GET users listing. */
 
 
-router.post('/login',function(req, res) {
+router.post('/api/login',function(req, res) {
     console.log(req.body.id+req.body.password)
     if(req.body.id=='wsh'&&req.body.password=='wsh')
      {
