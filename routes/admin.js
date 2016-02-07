@@ -7,18 +7,26 @@ ObjectId = require('mongoskin').ObjectID
 
 
 router.post('/api/login',function(req, res) {
-    console.log(req.body.id+req.body.password)
-    if(req.body.id=='wsh'&&req.body.password=='wsh')
-     {
-           var token = jwt.sign(req.body.id,'iamdanny', {
-          expiresInMinutes: 1440 // expires in 24 hours
-        });
-        return res.json({rs:'login ok',token:token});
-
-        
-    }
     
-    return res.status(401).json({rs:'fail to login '});
+     db.users.find({username:req.body.id,password:req.body.password}).toArray(function(err,users){
+        
+        if(err)return res.status(500).json(err);
+        if(users.length>0){
+             var token = jwt.sign(req.body.id,'iamdanny', {
+          expiresInMinutes: 1440 // expires in 24 hours
+            return res.json({rs:'login ok',token:token});
+        }else
+           return res.status(401).json({rs:'fail to login '});
+        
+        
+        
+       
+    })
+    
+    
+    
+    
+   
     
     
     
