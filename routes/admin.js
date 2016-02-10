@@ -156,13 +156,118 @@ router.get('/api/multiplelogin',isAdminAuthed,function(req,res,next){
 router.delete('/api/multiplelogin',isAdminAuthed,function(req,res,next){
 
     db.multiplelogin.remove({},function(err){
-
+if(err)return res.status(500).json(err);
          res.status(200).send("Done!");
     })
-    if(err)return res.status(500).json(err);
+
 
 
 })
+
+
+
+router.get('/api/dayTotal',isAdminAuthed,function(req,res,next){
+    
+    //get this month
+    var thisMonth =new Date();
+    thisMonth.setDate(1);
+    thisMonth.setHours(0,0,0,0);
+    var nextMonth = new Date();
+    nextMonth.setDate(1);
+    nextMonth.setHours(0,0,0,0);
+    nextMonth.setMonth(nextMonth.getMonth()+1);
+  
+    
+    
+    //get today
+    var today = new Date();
+    today.setHours(0,0,0,0);
+    var tomorrow = new Date();
+    tomorrow.setHours(0,0,0,0);
+    tomorrow.setDate(today.getDate()+1);
+    
+  
+    db.users.find({registeredOn:{$lt:tomorrow,$gte:today}}).toArray(function(err,users){
+
+        if(err)return res.status(500).json(err);
+
+        var totalcost=0;
+            for(var i=0;i<users.length;i++)
+                {
+                    totalcost+=users[i].salePrice||0;
+
+                }
+               
+        
+        res.json({daytotal:totalcost});
+    })
+
+})
+
+
+router.get('/api/monthTotal',isAdminAuthed,function(req,res,next){
+    
+    //get this month
+    var thisMonth =new Date();
+    thisMonth.setDate(1);
+    thisMonth.setHours(0,0,0,0);
+    var nextMonth = new Date();
+    nextMonth.setDate(1);
+    nextMonth.setHours(0,0,0,0);
+    nextMonth.setMonth(nextMonth.getMonth()+1);
+  
+    
+    
+   
+  
+    db.users.find({registeredOn:{$lt:nextMonth,$gte:thisMonth}}).toArray(function(err,users){
+
+        if(err)return res.status(500).json(err);
+
+        var totalcost=0;
+            for(var i=0;i<users.length;i++)
+                {
+                    
+                    totalcost+=users[i].salePrice||0;
+
+                }
+                
+        
+        res.json({monthtotal:totalcost});
+    })
+
+})
+
+
+router.get('/api/rangetotal/:from/:todate',isAdminAuthed,function(req,res,next){
+
+        var toDate=new Date(req.params.todate);
+        toDate.setDate(toDate.getDate()+1);
+    
+      
+    
+    
+   
+  
+    db.users.find({registeredOn:{$lt:toDate,$gte:new Date(req.params.from)}}).toArray(function(err,users){
+
+        if(err)return res.status(500).json(err);
+
+        var totalcost=0;
+            for(var i=0;i<users.length;i++)
+                {
+                    
+                    totalcost+=users[i].salePrice||0;
+
+                }
+                
+        
+        res.json({totalcost:totalcost,users:users});
+    })
+
+})
+
+
 
 
 function isAdminAuthed(req,res,next){
