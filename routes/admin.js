@@ -4,7 +4,7 @@ var jwt    = require('jsonwebtoken');
 ObjectId = require('mongoskin').ObjectID
 
 /* GET users listing. */
-
+var defaultPageCount=100;
 
 router.post('/api/login',function(req, res) {
 
@@ -34,10 +34,17 @@ console.log(users);
   });
 
 
-  router.get('/api/usercount',isAdminAuthed,function(req,res,next){
 
+  router.get('/api/users/:pnum/:count',isAdminAuthed,function(req,res,next){
 
-      db.users.find().count(function(err,count){
+      var page_number= parseInt(req.params.pnum);
+      var count= parseInt(req.params.count);
+
+       db.users.find().count(function(err,total_count){//GET COUNT
+
+          if(err)return res.status(500).json(err);
+
+           db.users.find().skip(page_number).limit(count).sort({ username: -1 }).toArray(function(err,users){//GET USERS
 
           if(err)return res.status(500).json(err);
 
@@ -45,19 +52,25 @@ console.log(users);
 
 
 
-          res.json({count:count});
+          res.json({users:users,total_count:total_count});
       })
+
+
+
+      })
+
+
+
 
   })
 
-  
 
-  router.get('/api/users/:pnum/:count',isAdminAuthed,function(req,res,next){
+  router.get('/api/users/:keyword',isAdminAuthed,function(req,res,next){
 
-      var page_number= parseInt(req.params.pnum);
-      var count= parseInt(req.params.count);
+      var keyword= req.params.keyword;
 
-      db.users.find().skip(page_number).limit(count).sort({ username: -1 }).toArray(function(err,users){
+
+      db.users.find({$or: [ { username:{$regex: keyword}}, {note:{$regex: keyword}} ]}).limit(defaultPageCount).sort({ username: -1 }).toArray(function(err,users){
 
           if(err)return res.status(500).json(err);
 
@@ -72,56 +85,39 @@ console.log(users);
 
 
 
+  router.delete('/api/users/:id',isAdminAuthed,function(req,res,next){
 
-router.get('/api/users',isAdminAuthed,function(req,res,next){
+      db.users.remove({_id: ObjectId(req.params.id)},function(err){
 
-    db.users.find().toArray(function(err,users){
+          if(err)return res.status(500).json(err);
 
-        if(err)return res.status(500).json(err);
+           db.users.find().limit(defaultPageCount).sort({ username: -1 }).toArray(function(err,users){
 
-
-
-
-
-        res.json(users);
-    })
-
-})
+               if(err)return res.status(500).json(err);
 
 
-router.delete('/api/users/:id',isAdminAuthed,function(req,res,next){
+                 res.json(users);
+            })
+      })
 
-    db.users.remove({_id: ObjectId(req.params.id)},function(err){
-
-        if(err)return res.status(500).json(err);
-
-         db.users.find().toArray(function(err,users){
-
-             if(err)return res.status(500).json(err);
+  })
 
 
-               res.json(users);
-          })
-    })
+  router.post('/api/users',isAdminAuthed,function(req,res,next){
 
-})
+      var user=req.body
+      user.registeredOn=new Date()
+      db.users.insert(req.body,function(err){
 
+          if(err)return res.status(500).json(err);
 
-router.post('/api/users',isAdminAuthed,function(req,res,next){
+            db.users.find().limit(defaultPageCount).sort({ username: -1 }).toArray(function(err,users){
 
-    var user=req.body
-    user.registeredOn=new Date()
-    db.users.insert(req.body,function(err){
-
-        if(err)return res.status(500).json(err);
-
-          db.users.find().toArray(function(err,users){
-
-             if(err)return res.status(500).json(err);
+               if(err)return res.status(500).json(err);
 
 
-               res.json(users);
-          })
+                 res.json(users);
+            })
 
 
 
@@ -132,26 +128,26 @@ router.post('/api/users',isAdminAuthed,function(req,res,next){
 
 
 
-    })
+      })
 
-})
+  })
 
-router.put('/api/users/:id',isAdminAuthed,function(req,res,next){
+  router.put('/api/users/:id',isAdminAuthed,function(req,res,next){
 
-    db.users.update({_id:ObjectId(req.params.id)},{$set:{password:req.body.password,salePrice:req.body.salePrice,note:req.body.note}},function(err){
+      db.users.update({_id:ObjectId(req.params.id)},{$set:{password:req.body.password,salePrice:req.body.salePrice,note:req.body.note}},function(err){
 
-        if(err)return res.status(500).json(err);
+          if(err)return res.status(500).json(err);
 
-         db.users.find().toArray(function(err,users){
+           db.users.find().limit(defaultPageCount).sort({ username: -1 }).toArray(function(err,users){
 
-             if(err)return res.status(500).json(err);
+               if(err)return res.status(500).json(err);
 
 
-               res.json(users);
-          })
-    })
+                 res.json(users);
+            })
+      })
 
-})
+  })
 
 
 router.get('/api/onlineusers',isAdminAuthed,function(req,res,next){

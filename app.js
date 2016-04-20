@@ -93,6 +93,8 @@ app.use(function(err, req, res, next) {
     db.bind('users');
     db.bind('current_users');
     db.bind('multiplelogin');
+    db.bind('race');
+
     global.db = db;
  db.current_users.remove({});
 

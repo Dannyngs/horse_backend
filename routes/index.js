@@ -66,7 +66,16 @@ tdS.each(function(index) {
     	}
 });
 
-  res.json(raceList);
+        var link_str=raceList[1].link.split('HV/');//race 1 has no link from the raw data, so we should assign one to it.
+        
+        for(var i=0;i<raceList.length;i++){
+            var rn=(i+1).toString();
+             raceList[i].no=rn;
+            console.log(raceList[i].link)
+            raceList[i].link=link_str[0]+'HV/'+rn;
+            
+        }
+        res.json(raceList);
 
 
     }
@@ -89,24 +98,33 @@ tdS.each(function(index) {
 
 
 /* 2nd fetch horses , veterinary records , draws ,etc from a certain race */
-router.post('/', function(req, res) {
+function selectRace(req, res) {
    
     var link =  req.body.link;
     var     lang = req.body.lang||'english';
-    var raceID = 0;
-    if(link!="/")//need to edit hen production
-     raceID = link.split('/')[2]-1;
-    console.log(raceID)
-    var horseList =[];
+   var raceID = link.split('/')[2]-1;
+   // if(link!="/")//need to edit hen production
+   
+    //console.log(raceID)
+    
      var drawList = [];
      var veterinaryList = [];
      var trainerList = [];
      var jockeyList = [];
-        var raceinfo={};
+    var horseList =[];
+    var raceinfo={};
+    
+    db.race.findOne({raceLink:link},function(err,race){
+       if(race){
+            
 
-   
-   
-    async.parallel([
+
+        res.json(race);
+          return;
+  
+       }
+        console.log('horse list')
+         async.parallel([
         function(callback){
          console.log('Fetching Horse');
 
@@ -164,7 +182,6 @@ router.post('/', function(req, res) {
             $ = cheerio.load(body);
 
 
-
  var trS = $('.rowDiv30').eq(raceID).find('.trBgWhite');
         trS.each(function(index ) {
             
@@ -172,7 +189,6 @@ router.post('/', function(req, res) {
 	 		var tdS = $(this).children();
 	 		draw.no = tdS.eq(0).text();
 	 		draw.placed = parseInt(tdS.eq(8).text());
-            
 
                
 
@@ -389,7 +405,7 @@ router.post('/', function(req, res) {
         
       
        
-       res.json({hl:horseList,ri:raceinfo})
+       res.json({raceLink:link,hl:horseList,ri:raceinfo})
     
     
     
@@ -397,12 +413,17 @@ router.post('/', function(req, res) {
     
     
     });
+   
+    });
+   
+   
     
 
 
 
 
-});
+}
+router.post('/',selectRace);
 
 
 
@@ -423,9 +444,68 @@ router.post('/', function(req, res) {
 }
 
 
+router.post('/saveRace',function(req,res){
+    var race = req.body.race;
+    
+     db.race.remove({raceLink:race.raceLink},function(err,rs){
+               rankHorse(race.hl)
+              db.race.insert(race,function(err,rs){
+                 
+                 res.json({race:race})
+
+              })
+          })
+    
+    /*
+      db.race.findOne({raceID:race.raceID},function(err,current_race){
+          
+
+      if(current_race){
+          
+          
+          db.race.remove({raceID:race.raceID},function(err,rs){
+               rankHorse(race.hl)
+              db.race.insert(race,function(err,rs){
+                 
+                 res.json({race:race})
+
+              })
+          })
+          
+      }else{
+           rankHorse(race.hl)
+        db.race.insert(race,function(err,rs){
+           
+                 res.json({race:race})
+            })
+      }
+                         
+                         
+          
+          
+          
+          
+      
+      
+      });
+      */
+    
+})
 
 
-
+router.post('/resetRace',function(req,res){
+   
+    
+     db.race.remove({raceLink:req.body.raceLink},function(err,rs){
+         if(err){res.status(500).send();return;}
+            
+         res.send();
+         
+              
+          })
+    
+   
+})
 
 /* socket.io setting */
    
