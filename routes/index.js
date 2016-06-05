@@ -36,7 +36,9 @@ router.get('/fetchRace', function(req, res) {
 
  var tdS = $('.raceNum').find('td');
  var racePlace = tdS.filter('.racingTitle');
+ var raceFieldLink = racePlace.text().includes('Sha')?'ST/':'HV/';
 
+   
 
 tdS.each(function(index) {
 
@@ -65,16 +67,21 @@ tdS.each(function(index) {
     		raceList.push(race);
     	}
 });
-
-        var link_str=raceList[1].link.split('HV/');//race 1 has no link from the raw data, so we should assign one to it.
+        
+        
+       
+        var link_str=raceList[0].link.split(raceFieldLink);//race 1 has no link from the raw data, so we should assign one to it.
+        if(link_str[0]=='/')
+        link_str=raceList[raceList.length-1].link.split(raceFieldLink);
+        
         
         for(var i=0;i<raceList.length;i++){
             var rn=(i+1).toString();
              raceList[i].no=rn;
-            console.log(raceList[i].link)
-            raceList[i].link=link_str[0]+'HV/'+rn;
+            raceList[i].link=link_str[0]+raceFieldLink+rn;
             
         }
+        
         res.json(raceList);
 
 
