@@ -41,8 +41,9 @@ router.get('/fetchRace', function(req, res) {
    
 
 tdS.each(function(index) {
-
-	if($(this).attr('width')=="24px")
+    
+  
+	if($(this).attr('width')=="24px" && $(this).html()!='&#xA0;')
     	{
     		var race =  {};
            
@@ -61,9 +62,8 @@ tdS.each(function(index) {
 
                    
                }
-            //var str = race.link.toString();
             
-          // race.date = str.split("/");
+            
     		raceList.push(race);
     	}
 });
